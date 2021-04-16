@@ -20,11 +20,11 @@ class Encoder(tf.keras.layers.Layer):
     def call(self, inputs):
         return self.U(inputs)
 
-    def compute_output_shape(self, input_shape):
-        return self.U.compute_output_shape(input_shape)
-
     def compute_output_signature(self, input_signature: tf.TensorSpec) -> tf.TensorSpec:
         return self.U.compute_output_signature(input_signature)
+
+    def compute_output_shape(self, input_shape):
+        return self.U.compute_output_shape(input_shape)
 
     def get_config(self):
         return self.param.get_config()
@@ -46,11 +46,11 @@ class Decoder(tf.keras.layers.Layer):
     def call(self, inputs):
         return self.V(inputs)
 
-    def compute_output_shape(self, input_shape):
-        return self.V.compute_output_shape(input_shape)
-
     def compute_output_signature(self, input_signature: tf.TensorSpec) -> tf.TensorSpec:
         return self.V.compute_output_signature(input_signature)
+
+    def compute_output_shape(self, input_shape):
+        return self.V.compute_output_shape(input_shape)
 
     def get_config(self):
         return self.param.get_config()
@@ -78,6 +78,9 @@ class GlobalNormalization(tf.keras.layers.Layer):
 
     def compute_output_signature(self, input_signature: tf.TensorSpec) -> tf.TensorSpec:
         return input_signature
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
     def call(self, inputs):
         mean = tf.math.reduce_mean(inputs)
@@ -145,6 +148,16 @@ class ConvBlock(tf.keras.layers.Layer):
         result_output = self.conv_output.compute_output_signature(output)
         return [result_skip, result_output]
 
+    def compute_output_shape(self, input_shape: tf.TensorShape) -> List[tf.TensorShape]:
+        output = self.conv_bottle.compute_output_shape(input_shape)
+        output = self.prelu_bottle.compute_output_shape(output)
+        output = self.norm_bottle.compute_output_shape(output)
+        output = self.prelu_sconv.compute_output_shape(output)
+        output = self.norm_sconv.compute_output_shape(output)
+        result_skip = self.conv_skip.compute_output_shape(output)
+        result_output = self.conv_output.compute_output_shape(output)
+        return [result_skip, result_output]
+
     def get_config(self):
         d = self.param.get_config()
         d["dilation"] = self.dilation
@@ -181,11 +194,16 @@ class Separation(tf.keras.layers.Layer):
         self.final_reshape = tf.keras.layers.Reshape(
             target_shape=(self.param.THat, self.param.C, self.param.N)
         )
+        self.final_permut = tf.keras.layers.Permute((2, 1, 3))
 
     def compute_output_signature(self, input_signature: tf.TensorSpec):
         shape = input_signature.shape
-        new_shape = [*shape[:-1], self.param.C, shape[-1]]
+        new_shape = [self.param.C, *shape]
         return tf.TensorSpec(shape=new_shape, dtype=input_signature.dtype)
+
+    def compute_output_shape(self, input_shape: tf.TensorShape) -> tf.TensorShape:
+        new_shape = [self.param.C, *input_shape]
+        return tf.TensorShape(new_shape)
 
     def call(self, inputs):
         output = self.layer_norm(inputs)
@@ -198,6 +216,7 @@ class Separation(tf.keras.layers.Layer):
         output = self.prelu(output)
         output = self.final_conv(output)
         output = self.final_reshape(output)
+        output = self.final_permut(output)
         return output
 
     def get_config(self):
