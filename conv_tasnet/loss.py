@@ -10,6 +10,7 @@ class SiSNR(tf.keras.losses.Loss):
     """
 
     def __init__(self, epsilon: float = 1e-10):
+        super(SiSNR, self).__init__()
         self.epsilon = epsilon
 
     def call(self, s, s_hat):
@@ -18,3 +19,4 @@ class SiSNR(tf.keras.losses.Loss):
         e_noise = s_hat - s_target
         result = 20 * tf.math.log(tf.norm(e_noise) /
                                   (tf.norm(s_target + self.epsilon) + self.epsilon)) / math.log(10)
+        return result
