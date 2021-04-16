@@ -41,7 +41,7 @@ class ConvTasNet(tf.keras.Model):
         self.encoder = Encoder(param)
         self.separation = Separation(param)
         self.encoded_reshape = tf.keras.layers.Reshape(
-            target_shape=(self.param.THat, self.param.C, self.param.N))
+            target_shape=(self.param.C, self.param.THat, self.param.N))
         self.mask_apply = tf.keras.layers.Multiply()
         self.decoder = Decoder(param)
 
@@ -49,7 +49,7 @@ class ConvTasNet(tf.keras.Model):
         encoded = self.encoder(inputs)
         separated = self.separation(encoded)
         encoded = tf.keras.layers.concatenate(
-            [encoded for i in range(self.param.C)], axis=-1)
+            [encoded for i in range(self.param.C)], axis=1)
         encoded = self.encoded_reshape(encoded)
         applied = self.mask_apply([encoded, separated])
         decoded = self.decoder(applied)
