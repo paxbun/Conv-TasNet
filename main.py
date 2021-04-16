@@ -68,7 +68,8 @@ def main(argv):
         history = model.fit(dataset.make_dataset(get_dataset_param()))
         model.save_weights(f"{checkpoint_dir}/{epoch:05d}.ckpt")
         epoch += 1
-        epochs_to_inc -= 1
+        if epochs_to_inc != None:
+            epochs_to_inc -= 1
 
 
 if __name__ == '__main__':
