@@ -29,7 +29,7 @@ flags.DEFINE_integer("P", 3, "Kernel size in convolultional blocks")
 flags.DEFINE_integer("X", 8, "Number of convolutional blocks in each repeat")
 flags.DEFINE_integer("R", 3, "Number of repeats")
 flags.DEFINE_string("Ha", "linear", "Activation function used in the encoder")
-flags.DEFINE_integer("THat", 40, "Total number of segments in the input")
+flags.DEFINE_integer("THat", 128, "Total number of segments in the input")
 
 
 def get_model_param() -> ConvTasNetParam:

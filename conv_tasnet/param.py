@@ -28,7 +28,7 @@ class ConvTasNetParam:
                  X: int = 8,
                  R: int = 3,
                  Ha: str = "linear",
-                 THat: int = 40,
+                 THat: int = 128,
                  C: int = 4,
                  epsilon: float = 1e-8):
         self.N = N
