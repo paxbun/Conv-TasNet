@@ -37,6 +37,9 @@ class ConvTasNetParam:
                  C: int = 4,
                  epsilon: float = 1e-8,
                  overlap: int = 8):
+        if overlap * 2 > L:
+            raise ValueError("overlap * 2 must be L or smaller")
+
         self.N = N
         self.L = L
         self.B = B
