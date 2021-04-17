@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from .param import ConvTasNetParam
 from .layers import Encoder, Decoder, Separation
-from .loss import SiSNR
+from .loss import SDR
 
 
 class ConvTasNet(tf.keras.Model):
@@ -19,7 +19,7 @@ class ConvTasNet(tf.keras.Model):
     @staticmethod
     def make(param: ConvTasNetParam,
              optimizer: tf.keras.optimizers.Optimizer = "adam",
-             loss: tf.keras.losses.Loss = SiSNR()):
+             loss: tf.keras.losses.Loss = SDR()):
         """Instantiate and compile a new Conv-TasNet model instance.
 
         Args:
