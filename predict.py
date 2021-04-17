@@ -71,7 +71,7 @@ def main(argv):
     num_samples_output = num_portions * param.THat * (param.L - param.overlap)
     num_samples = num_samples_output + param.overlap
 
-    if FLAGS.interoplate:
+    if FLAGS.interpolate:
         def filter_gen(n):
             if n < param.overlap:
                 return n / param.overlap
