@@ -14,9 +14,10 @@ class ConvTasNetParam:
         THat: Total number of segments in the input (p. 1257)
         C: Number of speakers (p. 1258)
         epsilon: Small constant for numerical stability (p. 1259)
+        overlap: Number of samples in which each adjacent pair of fragments overlap
     """
 
-    __slots__ = 'N', 'L', 'B', 'Sc', 'H', 'P', 'X', 'R', 'Ha', 'THat', 'C', 'epsilon'
+    __slots__ = 'N', 'L', 'B', 'Sc', 'H', 'P', 'X', 'R', 'Ha', 'THat', 'C', 'epsilon', 'overlap'
 
     def __init__(self,
                  N: int = 512,
@@ -30,7 +31,8 @@ class ConvTasNetParam:
                  Ha: str = "linear",
                  THat: int = 128,
                  C: int = 4,
-                 epsilon: float = 1e-8):
+                 epsilon: float = 1e-8,
+                 overlap: int = 8):
         self.N = N
         self.L = L
         self.B = B
@@ -43,6 +45,7 @@ class ConvTasNetParam:
         self.THat = THat
         self.C = C
         self.epsilon = epsilon
+        self.overlap = overlap
 
     def get_config(self) -> dict:
         return {
@@ -57,8 +60,20 @@ class ConvTasNetParam:
             "Ha": self.Ha,
             "THat": self.THat,
             "C": self.C,
-            "epsilon": self.epsilon
+            "epsilon": self.epsilon,
+            "overlap": self.overlap
         }
+
+    def save(self, path: str):
+        with open(path, "w", encoding="utf8") as f:
+            f.write('\n'.join(f"{key}={value}" for key,
+                              value in self.get_config()))
+
+    @staticmethod
+    def load(path: str):
+        with open(path, "r", encoding="utf8") as f:
+            return ConvTasNetParam(**dict(line.split('=')
+                                          for line in f.readlines()))
 
     def __str__(self) -> str:
         return str(self.get_config())
