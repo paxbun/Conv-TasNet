@@ -67,13 +67,25 @@ class ConvTasNetParam:
     def save(self, path: str):
         with open(path, "w", encoding="utf8") as f:
             f.write('\n'.join(f"{key}={value}" for key,
-                              value in self.get_config()))
+                              value in self.get_config().items()))
 
     @staticmethod
     def load(path: str):
+        def convert(value):
+            types = [int, float]
+            for t in types:
+                try:
+                    return t(value)
+                except:
+                    pass
+            return value
+
+        def convert_tup(tup):
+            return (tup[0], convert(tup[1]))
+        
         with open(path, "r", encoding="utf8") as f:
-            return ConvTasNetParam(**dict(line.split('=')
-                                          for line in f.readlines()))
+            d = dict(convert_tup(line.strip().split('=')) for line in f.readlines())
+            return ConvTasNetParam(**d)
 
     def __str__(self) -> str:
         return str(self.get_config())
