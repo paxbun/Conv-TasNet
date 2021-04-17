@@ -48,7 +48,7 @@ def get_dataset_param() -> DatasetParam:
         num_songs=FLAGS.num_songs, num_samples=FLAGS.num_samples,
         num_fragments=FLAGS.THat, len_fragment=FLAGS.L,
         repeat=FLAGS.repeat,
-        overlap=FALGS.overlap
+        overlap=FLAGS.overlap
     )
 
 
