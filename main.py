@@ -75,6 +75,7 @@ def main(argv):
         if epochs_to_inc != None:
             epochs_to_inc -= 1
         model.param.save(f"{checkpoint_dir}/config.txt")
+        model.save(f"{checkpoint_dir}/model")
 
 
 if __name__ == '__main__':
