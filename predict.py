@@ -20,6 +20,8 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string("checkpoint", None,
                     "Directory containing saved weights", required=True)
 flags.DEFINE_string("video_id", None, "YouTube video ID", required=True)
+flags.DEFINE_bool("interpolate", False,
+                  "Interpolate overlapping part of each rows")
 
 
 def youtube_dl_hook(d):
@@ -69,6 +71,16 @@ def main(argv):
     num_samples_output = num_portions * param.THat * (param.L - param.overlap)
     num_samples = num_samples_output + param.overlap
 
+    if FLAGS.interoplate:
+        def filter_gen(n):
+            if n < param.overlap:
+                return n / param.overlap
+            elif n > param.L - param.overlap:
+                return (param.L - n) / param.overlap
+            else:
+                return 1
+        output_filter = np.array([filter_gen(n) for n in range(param.L)])
+
     print("predicting...")
 
     audio = audio[:num_samples]
@@ -80,8 +92,25 @@ def main(argv):
             model_input[i][j] = audio[begin:end]
     separated = model.predict(model_input)
     separated = np.transpose(separated, (1, 0, 2, 3))
+
+    if FLAGS.interpolate:
+        separated = output_filter * separated
+        overlapped = separated[:, :, :, (param.L - param.overlap):]
+        overlapped = np.pad(
+            overlapped,
+            pad_width=((0, 0), (0, 0), (0, 0),
+                       (0, param.L - 2 * param.overlap)),
+            mode="constant",
+            constant_values=0)
+        overlapped = np.reshape(overlapped, (param.C, num_samples_output))
+        overlapped[:, 1:] = overlapped[:, :-1]
+        overlapped[:, 0] = 0
+
     separated = separated[:, :, :, :(param.L - param.overlap)]
     separated = np.reshape(separated, (param.C, num_samples_output))
+
+    if FLAGS.interpolate:
+        separated += overlapped
 
     print("saving...")
 
