@@ -1,3 +1,6 @@
+# Copyright (c) 2021 Chanjung Kim. All rights reserved.
+# Licensed under the MIT License.
+
 import tensorflow as tf
 
 from .param import ConvTasNetParam
@@ -86,6 +89,36 @@ class GlobalNormalization(tf.keras.layers.Layer):
         mean = tf.math.reduce_mean(inputs)
         var = tf.math.reduce_variance(inputs)
         return ((inputs - mean) / tf.math.sqrt(var + self.epsilon)) * self.gamma + self.beta
+
+
+class CumulativeNormalization(tf.keras.layers.Layer):
+    """Implements `cLN(F)` defined in page 1259.
+
+
+    Attributes:
+        epsilon: Small constant for numerical stability (p. 1259)
+        gamma: Trainable parameters (p. 1259)
+        beta: Trainable parameters (p. 1259)    
+    """
+
+    def __init__(self, epsilon: float):
+        super(CumulativeNormalization, self).__init__()
+        self.epsilon = epsilon
+
+    def build(self, input_shape: tf.TensorShape):
+        self.N = int(input_shape[-1])
+        self.T = int(input_shape[-2])
+        self.step = tf.transpose(tf.expand_dims(tf.range(1, T + 1), axis=0))
+        pass
+
+    def compute_output_signature(self, input_signature: tf.TensorSpec) -> tf.TensorSpec:
+        return input_signature
+
+    def call(self, inputs):
+        mean = tf.math.cumsum(tf.math.reduce_mean(
+            inputs, axis=-1), axis=-1) / self.step
+        tf.math.reduce_variance()
+        pass
 
 
 class ConvBlock(tf.keras.layers.Layer):

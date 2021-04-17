@@ -1,3 +1,7 @@
+# Copyright (c) 2021 Chanjung Kim. All rights reserved.
+# Licensed under the MIT License.
+
+
 class ConvTasNetParam:
     """Contains hyperparameters.
 
@@ -82,9 +86,10 @@ class ConvTasNetParam:
 
         def convert_tup(tup):
             return (tup[0], convert(tup[1]))
-        
+
         with open(path, "r", encoding="utf8") as f:
-            d = dict(convert_tup(line.strip().split('=')) for line in f.readlines())
+            d = dict(convert_tup(line.strip().split('='))
+                     for line in f.readlines())
             return ConvTasNetParam(**d)
 
     def __str__(self) -> str:
