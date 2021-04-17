@@ -30,13 +30,16 @@ flags.DEFINE_integer("X", 8, "Number of convolutional blocks in each repeat")
 flags.DEFINE_integer("R", 3, "Number of repeats")
 flags.DEFINE_string("Ha", "linear", "Activation function used in the encoder")
 flags.DEFINE_integer("THat", 128, "Total number of segments in the input")
+flags.DEFINE_integer(
+    "overlap", 8, "Number of samples in which each adjacent pair of fragments overlap")
 
 
 def get_model_param() -> ConvTasNetParam:
     return ConvTasNetParam(
         N=FLAGS.N, L=FLAGS.L, B=FLAGS.B, H=FLAGS.H, Sc=FLAGS.Sc,
         P=FLAGS.P, X=FLAGS.X, R=FLAGS.R, Ha=FLAGS.Ha, THat=FLAGS.THat,
-        C=len(Provider.STEMS)
+        C=len(Provider.STEMS),
+        overlap=FLAGS.overlap
     )
 
 
@@ -44,7 +47,8 @@ def get_dataset_param() -> DatasetParam:
     return DatasetParam(
         num_songs=FLAGS.num_songs, num_samples=FLAGS.num_samples,
         num_fragments=FLAGS.THat, len_fragment=FLAGS.L,
-        repeat=FLAGS.repeat
+        repeat=FLAGS.repeat,
+        overlap=FALGS.overlap
     )
 
 
@@ -70,6 +74,7 @@ def main(argv):
         epoch += 1
         if epochs_to_inc != None:
             epochs_to_inc -= 1
+        model.param.save(f"{checkpoint_dir}/config.txt")
 
 
 if __name__ == '__main__':
