@@ -86,8 +86,8 @@ class GlobalNormalization(tf.keras.layers.Layer):
         return input_shape
 
     def call(self, inputs):
-        mean = tf.math.reduce_mean(inputs)
-        var = tf.math.reduce_variance(inputs)
+        mean = tf.math.reduce_mean(inputs, axis=[1, 2], keepdims=True)
+        var = tf.math.reduce_variance(inputs, axis=[1, 2], keepdims=True)
         return ((inputs - mean) / tf.math.sqrt(var + self.epsilon)) * self.gamma + self.beta
 
 
