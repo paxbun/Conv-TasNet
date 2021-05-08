@@ -92,6 +92,7 @@ class Provider:
             raise ValueError("max_decoded must be greater than 0")
 
         self.tracks = list(musdb.DB(root=root, subsets=subsets))
+        self.subsets = subsets
         self.num_tracks = len(self.tracks)
         self.decoded: Dict[str, Union[NoneType, DecodedTrack]] = [
             None] * self.num_tracks
@@ -108,7 +109,7 @@ class Provider:
 
         indices = [idx for idx in indices if self.decoded[idx] == None]
         if indices:
-            print(f"Decoding Audio {indices}...")
+            print(f"\n\nDecoding Audio {indices} of subset {self.subsets}...")
             for idx in tqdm(indices):
                 self.ord_decoded
                 if self.num_decoded == self.max_decoded:

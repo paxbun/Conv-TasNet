@@ -57,7 +57,10 @@ def get_dataset_param() -> DatasetParam:
 
 def main(argv):
     model = ConvTasNet.make(get_model_param())
-    dataset = Provider(FLAGS.dataset_path, max_decoded=FLAGS.max_decoded)
+    dataset = Provider(FLAGS.dataset_path, subsets="train",
+                       max_decoded=FLAGS.max_decoded)
+    val_dataset = Provider(
+        FLAGS.dataset_path, subsets="test", max_decoded=FLAGS.max_decoded)
     checkpoint_dir = FLAGS.checkpoint
 
     epoch = 0
@@ -72,7 +75,9 @@ def main(argv):
     epochs_to_inc = FLAGS.epochs
     while epochs_to_inc == None or epochs_to_inc > 0:
         print(f"Epoch: {epoch}")
-        history = model.fit(dataset.make_dataset(get_dataset_param()))
+        train = dataset.make_dataset(get_dataset_param())
+        val = val_dataset.make_dataset(get_dataset_param())
+        history = model.fit(train, validation_data=val)
         model.save_weights(f"{checkpoint_dir}/{epoch:05d}.ckpt")
         epoch += 1
         if epochs_to_inc != None:
