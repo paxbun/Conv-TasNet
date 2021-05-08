@@ -7,7 +7,7 @@ import musdb
 import random
 import gc
 from tqdm import tqdm
-from typing import Union, List, Tuple, Dict
+from typing import Union, List, Tuple, Dict, Optional
 
 
 class DatasetParam:
@@ -94,12 +94,24 @@ class Provider:
         self.tracks = list(musdb.DB(root=root, subsets=subsets))
         self.subsets = subsets
         self.num_tracks = len(self.tracks)
-        self.decoded: Dict[str, Union[NoneType, DecodedTrack]] = [
-            None] * self.num_tracks
+        self.decoded: List[Optional[DecodedTrack]] = [None] * self.num_tracks
         self.num_decoded = 0
         self.max_decoded = max_decoded
         self.ord_decoded = [-1] * self.num_tracks
         self.next_ord = 0
+
+    def remove_oldest(self):
+        assert self.num_decoded > 0
+        idx = None
+        for i in range(self.num_tracks):
+            if self.ord_decoded[i] != -1:
+                if idx == None or self.ord_decoded[idx] > self.ord_decoded[i]:
+                    idx = i
+        assert idx != None
+        self.decoded[idx] = None
+        self.num_decoded -= 1
+        self.ord_decoded[idx] = -1
+        gc.collect()
 
     def decode(self, indices: Union[int, List[int]]):
         if type(indices) == int:
@@ -107,17 +119,17 @@ class Provider:
         if len(indices) > self.max_decoded:
             raise ValueError("Cannot decode more than `max_decoded` tracks")
 
+        for idx in indices:
+            if self.decoded[idx] != None:
+                self.ord_decoded[idx] = self.next_ord
+                self.next_ord += 1
+
         indices = [idx for idx in indices if self.decoded[idx] == None]
         if indices:
             print(f"\n\nDecoding Audio {indices} of subset {self.subsets}...")
             for idx in tqdm(indices):
-                self.ord_decoded
-                if self.num_decoded == self.max_decoded:
-                    idx = np.argmin(self.ord_decoded)
-                    self.decoded[idx] = None
-                    self.num_decoded -= 1
-                    self.ord_decoded[idx] = -1
-                    gc.collect()
+                while self.num_decoded >= self.max_decoded:
+                    self.remove_oldest()
                 self.decoded[idx] = DecodedTrack.from_track(self.tracks[idx])
                 self.num_decoded += 1
                 self.ord_decoded[idx] = self.next_ord
